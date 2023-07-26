@@ -58,6 +58,8 @@ public class AccountTransferApp {
 
     private static void transferFunds(List<Account> accounts) {
         Random random = new Random();
+        int transferAmount = (int) (Math.random() * 1000) + 1;
+        Object lock = new Object();
         int fromIndex = random.nextInt(accounts.size());
         int toIndex = random.nextInt(accounts.size());
 
@@ -68,14 +70,13 @@ public class AccountTransferApp {
         Account fromAccount = accounts.get(fromIndex);
         Account toAccount = accounts.get(toIndex);
 
-        synchronized (fromAccount) {
-            synchronized (toAccount) {
-                int amount = random.nextInt(fromAccount.getMoney() + 1);
-                if (amount > 0) {
-                    fromAccount.debit(amount);
-                    toAccount.credit(amount);
-                    log.info("Transferred " + amount + " from " + fromAccount.getId() + " to " + toAccount.getId());
-                }
+        synchronized (lock) {
+            if (fromAccount.getMoney() >= transferAmount) {
+                fromAccount.setMoney(fromAccount.getMoney() - transferAmount);
+                toAccount.setMoney(toAccount.getMoney() + transferAmount);
+                log.info("Transferred " + transferAmount + " from " + fromAccount.getId() + " to " + toAccount.getId());
+            } else {
+                log.info("Insufficient funds: " + fromAccount.getId());
             }
         }
     }

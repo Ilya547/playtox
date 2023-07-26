@@ -26,4 +26,9 @@ public class Account {
     public synchronized void credit(int amount) {
         money += amount;
     }
+
+    public void setMoney(int money) {
+        this.money = money;
+    }
+
 }
