@@ -10,7 +10,8 @@ import java.util.Properties;
 import static org.example.AccountTransferApp.log;
 
 public class PropertiesConnection {
-    private static final String rootPath = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResource("")).getPath();
+    private static final String rootPath = Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
+            .getResource("")).getPath();
     private static final String appConfigPath = rootPath + "application.properties";
 
     public static Properties getAppProps() {

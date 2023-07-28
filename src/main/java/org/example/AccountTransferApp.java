@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 
 public class AccountTransferApp {
@@ -16,6 +17,11 @@ public class AccountTransferApp {
             .getProperty("accounts.numbers"));
     private static final int THREADS_NUMBERS = Integer.parseInt(PropertiesConnection.getAppProps()
             .getProperty("threads.numbers"));
+    private static final int INIT_MONEY = Integer.parseInt(PropertiesConnection.getAppProps()
+            .getProperty("money.defaultValue"));
+
+    private static final Object LOCK = new Object();
+    static int numTransactions;
 
     public static void main(String[] args) {
         log.info("App running");
@@ -27,9 +33,8 @@ public class AccountTransferApp {
         List<Account> accounts = new ArrayList<>();
 
         for (int i = 0; i < numAccounts; i++) {
-            String accountId = "A" + (i + 1);
-            int initialMoney = 10000;
-            Account account = new Account(accountId, initialMoney);
+            String accountId = String.valueOf(new StringBuilder("A||" + UUID.randomUUID() + "||" + (i + 1)));
+            Account account = new Account(accountId, INIT_MONEY);
             accounts.add(account);
         }
         return accounts;
@@ -39,13 +44,10 @@ public class AccountTransferApp {
         for (int i = 0; i < numThreads; i++) {
             Thread transferThread = new Thread(() -> {
                 Random random = new Random();
-                int numTransactions = 0;
-
                 while (numTransactions < TRANSACTIONS_LIMIT) {
                     try {
-                        Thread.sleep(random.nextInt(1001) + 1000); // Sleep for 1000-2000 ms
                         transferFunds(accounts);
-                        numTransactions++;
+                        Thread.sleep(random.nextInt(1001) + 1000);
                     } catch (InterruptedException e) {
                         log.error("Thread interrupted: " + e.getMessage());
                     }
@@ -58,23 +60,19 @@ public class AccountTransferApp {
 
     private static void transferFunds(List<Account> accounts) {
         Random random = new Random();
-        int transferAmount = (int) (Math.random() * 1000) + 1;
-        Object lock = new Object();
-        int fromIndex = random.nextInt(accounts.size());
-        int toIndex = random.nextInt(accounts.size());
+        int transferAmount = random.nextInt(1000);
 
-        if (fromIndex == toIndex) {
-            return;
-        }
+        List<Account> twoRandomAccount = Account.getRandomAccount(accounts);
+        Account fromAccount = twoRandomAccount.get(0);
+        Account toAccount = twoRandomAccount.get(1);
 
-        Account fromAccount = accounts.get(fromIndex);
-        Account toAccount = accounts.get(toIndex);
-
-        synchronized (lock) {
+        synchronized (LOCK) {
             if (fromAccount.getMoney() >= transferAmount) {
                 fromAccount.setMoney(fromAccount.getMoney() - transferAmount);
                 toAccount.setMoney(toAccount.getMoney() + transferAmount);
-                log.info("Transferred " + transferAmount + " from " + fromAccount.getId() + " to " + toAccount.getId());
+                numTransactions++;
+                log.info("Transferred " + transferAmount + " money from " + fromAccount.getId() + " to "
+                        + toAccount.getId() + ". Number of transactions : " + numTransactions);
             } else {
                 log.info("Insufficient funds: " + fromAccount.getId());
             }

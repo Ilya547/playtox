@@ -5,7 +5,7 @@
     <jmxConfigurator/>
 
     <appender name="file" class="ch.qos.logback.core.FileAppender">
-        <file>/Users/imac/IdeaProjects/Playtox/var/log/playtox.log</file>
+        <file>logs/playtox.log</file>
 
         <encoder>
             <charset>UTF-8</charset>
