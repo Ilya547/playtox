@@ -58,7 +58,6 @@ public class AccountTransferTest {
             int expectedSum = configurationProperties.getInitMoney() * configurationProperties.getAccountsNumbers();
             assertEquals(expectedSum, accountMoneySum);
 
-
             List<TransactionInfo> transactionInfos = convertLogsToTransactionInfo(listAppender);
             for (Account account : accounts) {
                 int accountMoney = account.getMoney();
